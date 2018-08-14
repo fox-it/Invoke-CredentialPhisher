@@ -1,7 +1,7 @@
 ﻿# Invoke-CredentialPhisher
 
 This repository consists of two files:
-* Invoke-Credentialphiher.ps1
+* Invoke-Credentialphisher.ps1
 * phishing_module.cna
 
 The first one is a powershell script to send toast notifications on behalf on an (installed) application or the computer itself. The user will be asked to supply credentials once they click on the notification toast. The second one is a Cobalt Strike module to launch the phishing attack on connected beacons. More information on why these scripts were created can be found on the following blogpost: https://blog.fox-it.com/2018/08/14/phishing-ask-and-ye-shall-receive/
