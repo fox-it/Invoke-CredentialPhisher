@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phishwin", "Phishwin\Phishwin.csproj", "{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{ECDE9C7F-4AF2-4F27-8A18-5B20285ED542}"
+	ProjectSection(SolutionItems) = preProject
+
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Release|x64.ActiveCfg = Release|Any CPU
+		{4E1D6B06-ACCC-491E-ABB9-631430AAF6BD}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0553DB7D-FA37-4032-81BF-9A202D0CB0BE}
+	EndGlobalSection
+EndGlobal
