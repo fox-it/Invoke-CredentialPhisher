@@ -1,4 +1,4 @@
-﻿
+
     # Fox-IT
     # Written by Rindert Kramer
 
